@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FFD700">
+    <meta name="description" content="BeeEarn - Premium Ad Earning Platform. Monetize your buzz and earn up to $0.13 per click.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <title>BeeEarn - Premium Ad Platform</title>
+    
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts for Premium Look -->
-    <link href="https://googleapis.com" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23FFD700'>🐝</text></svg>">
+    
+    <!-- Correct Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-
+ 
     <!-- Navigation -->
     <nav class="glass-panel">
         <div class="logo">BEE<span>EARN</span></div>
@@ -71,17 +80,17 @@
     <div id="joinModal" class="modal-overlay hidden">
         <div class="modal-content glass-panel">
             <h2>Join the Hive</h2>
-            <input type="email" id="joinEmail" placeholder="Email" class="premium-input">
-            <input type="text" id="joinUser" placeholder="Username" class="premium-input">
-            <input type="password" id="joinPass" placeholder="Password" class="premium-input">
+            <input type="email" id="joinEmail" placeholder="Email" class="premium-input" required>
+            <input type="text" id="joinUser" placeholder="Username" class="premium-input" required>
+            <input type="password" id="joinPass" placeholder="Password (min 6 chars)" class="premium-input" required minlength="6">
             
             <div class="terms-check">
-                <input type="checkbox" id="agreeTerms">
+                <input type="checkbox" id="agreeTerms" required>
                 <label>I agree to the <span id="openTerms" class="link-text">Terms and Conditions</span></label>
             </div>
 
             <button id="submitJoin" class="glow-btn full-width">Create Account</button>
-            <button class="close-modal">✕</button>
+            <button type="button" class="close-modal">✕</button>
         </div>
     </div>
 
@@ -90,16 +99,10 @@
         <div class="modal-content glass-panel scrollable-modal">
             <h2>Terms & Conditions</h2>
             <div class="terms-text">
-                <p><strong>1. Introduction</strong><br>Welcome to BeeEarn. By accessing this platform, you agree to...</p>
-                <p><strong>2. Earnings</strong><br>Users earn between $0.04 and $0.13 per click. Maximum 12 clicks per day...</p>
-                <p><strong>3. Payments</strong><br>Payments are processed on the 1st of every month. Minimum thresholds apply...</p>
-                <p><strong>4. User Conduct</strong><br>Any automated bot traffic will result in an immediate ban...</p>
-                <p><strong>5. Privacy</strong><br>Your data is stored locally via IndexedDB...</p>
-                <!-- Dummy filler text for scrolling effect -->
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
-                <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat...</p>
+                <!-- Content populated by script.js -->
             </div>
             <button id="closeTerms" class="glow-btn">Close</button>
+            <button type="button" class="close-modal">✕</button>
         </div>
     </div>
 
@@ -107,10 +110,10 @@
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-content glass-panel">
             <h2>Login</h2>
-            <input type="text" id="loginUser" placeholder="Username" class="premium-input">
-            <input type="password" id="loginPass" placeholder="Password" class="premium-input">
+            <input type="text" id="loginUser" placeholder="Username" class="premium-input" required>
+            <input type="password" id="loginPass" placeholder="Password" class="premium-input" required>
             <button id="submitLogin" class="glow-btn full-width">Enter Hive</button>
-            <button class="close-modal">✕</button>
+            <button type="button" class="close-modal">✕</button>
         </div>
     </div>
 
@@ -122,25 +125,25 @@
             
             <div class="payment-methods">
                 <div class="method-card" data-method="paypal" data-min="50">
-                    <img src="paypal.jpg" alt="PayPal">
+                    <img src="paypal.png" alt="PayPal">
                     <span>PayPal ($50 Min)</span>
                 </div>
                 <div class="method-card" data-method="bitcoin" data-min="65">
-                    <img src="bitcoin.jpg" alt="Bitcoin">
+                    <img src="bitcoin.png" alt="Bitcoin">
                     <span>Bitcoin ($65 Min)</span>
                 </div>
                 <div class="method-card" data-method="usdc" data-min="65">
-                    <img src="usdc.jpg" alt="USDC">
+                    <img src="usdc.png" alt="USDC">
                     <span>USDC ($65 Min)</span>
                 </div>
             </div>
 
             <div id="paymentDetails" class="hidden">
-                <input type="text" id="walletAddress" placeholder="Enter Payment Details/Address" class="premium-input">
+                <input type="text" id="walletAddress" placeholder="Enter Payment Details/Address" class="premium-input" required>
                 <button id="confirmWithdraw" class="glow-btn full-width">Request Withdrawal</button>
             </div>
             <p id="withdrawMsg" class="error-text"></p>
-            <button class="close-modal">✕</button>
+            <button type="button" class="close-modal">✕</button>
         </div>
     </div>
 
