@@ -150,6 +150,40 @@
 
     <!-- Custom Notification Container -->
     <div id="notificationArea"></div>
+    
+    <!-- Partner Bonus Modal -->
+    <div id="partnerBonusModal" class="modal-overlay hidden" style="z-index: 1500;">
+        <div class="modal-content glass-panel">
+            <h2>🎁 Partner Bonus Offer</h2>
+            <p style="color: #FFD700; font-weight: 700; font-size: 1.2rem;">You've Been Selected!</p>
+            
+            <div style="margin: 20px 0; padding: 15px; background: rgba(255, 215, 0, 0.1); border-radius: 8px; border-left: 4px solid #FFD700;">
+                <p style="margin-bottom: 10px;"><strong>🎯 Earn Bonus Reward:</strong></p>
+                <p style="font-size: 1.5rem; color: #FFD700; font-weight: 800; margin: 10px 0;" id="bonusRewardAmount">$0.00</p>
+                <p style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.8);">Just visit our partner page for 5 seconds!</p>
+            </div>
+            
+            <div style="background: rgba(255, 215, 0, 0.05); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <p style="font-size: 0.85rem; margin-bottom: 8px;"><strong>⏱️ Important Rules:</strong></p>
+                <ul style="list-style: none; padding: 0; font-size: 0.85rem;">
+                    <li style="margin: 5px 0;">✓ You must stay on the partner page for at least <strong>5 seconds</strong></li>
+                    <li style="margin: 5px 0;">✓ If you leave before 5 seconds, the reward is <strong>revoked</strong></li>
+                    <li style="margin: 5px 0;">✓ The partner page may contain <strong>adult content</strong></li>
+                    <li style="margin: 5px 0;">✓ By proceeding, you confirm you are <strong>18+ years old</strong></li>
+                </ul>
+            </div>
+            
+            <div style="margin: 15px 0;">
+                <input type="checkbox" id="bonusAgeConfirm" style="margin-right: 8px;">
+                <label style="font-size: 0.9rem;">I confirm I'm 18+ and agree to visit the partner page</label>
+            </div>
+            
+            <button id="acceptBonusBtn" class="glow-btn full-width" style="margin-top: 1rem;">Accept Bonus & Visit Partner</button>
+            <button id="declineBonusBtn" class="glow-btn full-width" style="margin-top: 0.5rem; background: transparent; color: rgba(255, 255, 255, 0.7); border-color: rgba(255, 215, 0, 0.5);">Decline Offer</button>
+            
+            <button type="button" class="close-modal">✕</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
