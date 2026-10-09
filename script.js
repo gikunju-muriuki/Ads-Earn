@@ -629,6 +629,11 @@ document.getElementById('submitLogin')?.addEventListener('click', async (event) 
         updateDashboard();
         showDashboard();
         clearLoginForm();
+        
+        // Show partner bonus popup after a short delay
+        setTimeout(() => {
+            PARTNER_BONUS.showBonusPopup(user.id);
+        }, 1500); // 1.5 second delay for better UX
     } catch (error) {
         let message = error.message || 'Login failed';
         
@@ -1266,6 +1271,188 @@ function populateTerms() {
         console.error('[Terms] Populate error:', error);
     }
 }
+
+// ============================================
+// PARTNER BONUS SYSTEM
+// ============================================
+
+const PARTNER_BONUS = {
+    minReward: 0.20,
+    maxReward: 0.42,
+    requiredTimeOnPage: 5000, // 5 seconds in milliseconds
+    partnerUrl: 'https://steemstreamer.pages.dev',
+    hasShownBonus: new Map(), // Track if bonus shown per session
+    
+    generateBonus() {
+        const random = Math.random();
+        const bonus = random * (this.maxReward - this.minReward) + this.minReward;
+        return parseFloat(bonus.toFixed(2));
+    },
+    
+    showBonusPopup(userId) {
+        try {
+            // Only show once per session
+            if (this.hasShownBonus.get(userId)) {
+                console.log('[Bonus] Already shown this session');
+                return;
+            }
+            
+            // Mark as shown
+            this.hasShownBonus.set(userId, true);
+            
+            // Generate random reward
+            const bonusAmount = this.generateBonus();
+            
+            // Store bonus info for later use
+            localStorage.setItem(`bonusAmount_${userId}`, bonusAmount.toString());
+            localStorage.setItem(`bonusStartTime_${userId}`, Date.now().toString());
+            
+            // Update UI
+            const bonusModal = document.getElementById('partnerBonusModal');
+            const bonusRewardAmount = document.getElementById('bonusRewardAmount');
+            
+            if (bonusRewardAmount) {
+                bonusRewardAmount.textContent = `$${bonusAmount.toFixed(2)}`;
+            }
+            
+            if (bonusModal) {
+                bonusModal.classList.remove('hidden');
+            }
+            
+            console.log('[Bonus] Popup shown with reward:', bonusAmount);
+        } catch (error) {
+            console.error('[Bonus] Show popup error:', error);
+        }
+    },
+    
+    async applyBonusReward(userId) {
+        try {
+            const bonusAmount = parseFloat(localStorage.getItem(`bonusAmount_${userId}`) || '0');
+            const bonusStartTime = parseInt(localStorage.getItem(`bonusStartTime_${userId}`) || '0', 10);
+            
+            if (!bonusAmount || bonusAmount === 0) {
+                throw new Error('No bonus amount found');
+            }
+            
+            // Check if user stayed 5 seconds
+            const elapsedTime = Date.now() - bonusStartTime;
+            if (elapsedTime < this.requiredTimeOnPage) {
+                console.log('[Bonus] User returned too early, reward revoked');
+                showNotification(`Reward revoked! You must stay for 5 seconds. You stayed for ${Math.round(elapsedTime / 1000)} seconds.`, 'error');
+                this.clearBonusData(userId);
+                return false;
+            }
+            
+            // Award the bonus
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORES.earnings], 'readwrite');
+                const store = transaction.objectStore(STORES.earnings);
+                const request = store.get(userId);
+                
+                request.onsuccess = () => {
+                    const earnings = request.result;
+                    if (!earnings) {
+                        reject(new Error('Earnings record not found'));
+                        return;
+                    }
+                    
+                    earnings.totalEarnings = parseFloat((earnings.totalEarnings + bonusAmount).toFixed(2));
+                    const updateRequest = store.put(earnings);
+                    
+                    updateRequest.onsuccess = () => {
+                        showNotification(`🎁 Bonus Reward Applied! +$${bonusAmount.toFixed(2)}`, 'success');
+                        console.log('[Bonus] Reward applied:', bonusAmount);
+                        this.clearBonusData(userId);
+                        updateEarningsDisplay();
+                        resolve(true);
+                    };
+                    
+                    updateRequest.onerror = () => reject(updateRequest.error);
+                };
+                
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.error('[Bonus] Apply reward error:', error);
+            showNotification('Error applying bonus. Please try again.', 'error');
+            return false;
+        }
+    },
+    
+    clearBonusData(userId) {
+        try {
+            localStorage.removeItem(`bonusAmount_${userId}`);
+            localStorage.removeItem(`bonusStartTime_${userId}`);
+        } catch (error) {
+            console.error('[Bonus] Clear data error:', error);
+        }
+    }
+};
+
+// Partner Bonus Event Listeners
+document.getElementById('acceptBonusBtn')?.addEventListener('click', async (event) => {
+    event.preventDefault();
+    
+    const userId = AUTH.getCurrentUserId();
+    const ageConfirmed = document.getElementById('bonusAgeConfirm')?.checked || false;
+    
+    if (!ageConfirmed) {
+        showNotification('Please confirm you are 18+ and agree to continue', 'error');
+        return;
+    }
+    
+    try {
+        // Close the modal
+        document.getElementById('partnerBonusModal')?.classList.add('hidden');
+        closeAllModals();
+        
+        // Show countdown notification
+        let countdown = 5;
+        showNotification(`⏳ You must stay on partner page for ${countdown} seconds to earn bonus!`, 'warning');
+        
+        // Open partner page in new tab
+        const partnerWindow = window.open(PARTNER_BONUS.partnerUrl, 'partner_bonus', 'width=800,height=600');
+        
+        if (!partnerWindow) {
+            showNotification('Please allow popups to visit partner page', 'error');
+            PARTNER_BONUS.clearBonusData(userId);
+            return;
+        }
+        
+        // Wait for required time, then apply bonus
+        setTimeout(() => {
+            PARTNER_BONUS.applyBonusReward(userId);
+        }, PARTNER_BONUS.requiredTimeOnPage);
+        
+        console.log('[Bonus] Partner window opened');
+    } catch (error) {
+        console.error('[Bonus] Accept bonus error:', error);
+        showNotification('Error processing bonus. Please try again.', 'error');
+        PARTNER_BONUS.clearBonusData(AUTH.getCurrentUserId());
+    }
+});
+
+document.getElementById('declineBonusBtn')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    
+    const userId = AUTH.getCurrentUserId();
+    PARTNER_BONUS.clearBonusData(userId);
+    document.getElementById('partnerBonusModal')?.classList.add('hidden');
+    closeAllModals();
+    showNotification('Bonus offer declined. You can always accept it next time!', 'info');
+    
+    console.log('[Bonus] Offer declined');
+});
+
+// Close bonus modal when clicking X
+document.querySelectorAll('#partnerBonusModal .close-modal')?.forEach(btn => {
+    btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        const userId = AUTH.getCurrentUserId();
+        PARTNER_BONUS.clearBonusData(userId);
+        document.getElementById('partnerBonusModal')?.classList.add('hidden');
+    });
+});
 
 // ============================================
 // PAGE INITIALIZATION
