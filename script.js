@@ -701,15 +701,22 @@ function saveAdPreference(preference) {
     }
 }
 
-// Ad Click Handler
+// Ad Click Handler - Social Ads
 document.getElementById('socialAdPlaceholder')?.addEventListener('click', (event) => {
-    event.preventDefault();
-    handleAdClick();
+    // Only trigger on actual placeholder click, not ad content
+    if (event.target.id === 'socialAdPlaceholder' || event.target.classList.contains('ad-banner')) {
+        event.preventDefault();
+        handleAdClick();
+    }
 });
 
+// Ad Click Handler - Adult Ads
 document.getElementById('adultAdPlaceholder')?.addEventListener('click', (event) => {
-    event.preventDefault();
-    handleAdClick();
+    // Only trigger on actual placeholder click, not ad content
+    if (event.target.id === 'adultAdPlaceholder' || event.target.classList.contains('ad-banner')) {
+        event.preventDefault();
+        handleAdClick();
+    }
 });
 
 async function handleAdClick() {
@@ -740,6 +747,15 @@ async function handleAdClick() {
             setTimeout(() => {
                 adBanner.style.animation = 'pulse 0.5s ease';
             }, 10);
+        }
+        
+        // Trigger ads reload (Adsterra will auto-refresh)
+        if (window.adsbygoogle) {
+            try {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            } catch (e) {
+                console.log('[Ads] AdSense refresh skipped');
+            }
         }
     } catch (error) {
         showNotification(error.message || 'Click failed', 'error');
@@ -904,11 +920,37 @@ function switchAds(type) {
     const adultAd = document.getElementById('adultAdPlaceholder');
     
     if (type === 'social') {
-        if (socialAd) socialAd.classList.remove('hidden');
+        if (socialAd) {
+            socialAd.classList.remove('hidden');
+            // Reload social ad script
+            reloadAdScript(socialAd);
+        }
         if (adultAd) adultAd.classList.add('hidden');
     } else {
         if (socialAd) socialAd.classList.add('hidden');
-        if (adultAd) adultAd.classList.remove('hidden');
+        if (adultAd) {
+            adultAd.classList.remove('hidden');
+            // Reload adult ad script
+            reloadAdScript(adultAd);
+        }
+    }
+    
+    // Save preference
+    saveAdPreference(type);
+}
+
+function reloadAdScript(adContainer) {
+    // Trigger Adsterra to reload ads in the container
+    try {
+        if (window.zergnet && typeof window.zergnet.zergnet_async_init === 'function') {
+            window.zergnet.zergnet_async_init();
+        }
+        // Alternative for Adsterra
+        if (window.adsterra && typeof window.adsterra === 'object') {
+            console.log('[Ads] Reloading ad container');
+        }
+    } catch (e) {
+        console.log('[Ads] Ad reload attempted');
     }
 }
 
@@ -1245,13 +1287,17 @@ async function initializePage() {
             showDashboard();
             updateDashboard();
             
-            // Restore ad preference
-            const savedAdPref = localStorage.getItem(`adPref_${userId}`) || 'social';
-            switchAds(savedAdPref);
-            document.getElementById(`show${savedAdPref.charAt(0).toUpperCase() + savedAdPref.slice(1)}Btn`)?.classList.add('active');
+        // Restore ad preference
+        const savedAdPref = localStorage.getItem(`adPref_${userId}`) || 'social';
+        switchAds(savedAdPref);
+        
+        // Update filter buttons UI
+        if (savedAdPref === 'social') {
+            document.getElementById('showSocialBtn')?.classList.add('active');
+            document.getElementById('showAdultBtn')?.classList.remove('active');
         } else {
-            console.log('[Init] No active session');
-            updateNavigation();
+            document.getElementById('showAdultBtn')?.classList.add('active');
+            document.getElementById('showSocialBtn')?.classList.remove('active');
         }
         
         console.log('[Init] Initialization complete');
