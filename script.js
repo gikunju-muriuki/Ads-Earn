@@ -1287,17 +1287,21 @@ async function initializePage() {
             showDashboard();
             updateDashboard();
             
-        // Restore ad preference
-        const savedAdPref = localStorage.getItem(`adPref_${userId}`) || 'social';
-        switchAds(savedAdPref);
-        
-        // Update filter buttons UI
-        if (savedAdPref === 'social') {
-            document.getElementById('showSocialBtn')?.classList.add('active');
-            document.getElementById('showAdultBtn')?.classList.remove('active');
+            // Restore ad preference
+            const savedAdPref = localStorage.getItem(`adPref_${userId}`) || 'social';
+            switchAds(savedAdPref);
+            
+            // Update filter buttons UI
+            if (savedAdPref === 'social') {
+                document.getElementById('showSocialBtn')?.classList.add('active');
+                document.getElementById('showAdultBtn')?.classList.remove('active');
+            } else {
+                document.getElementById('showAdultBtn')?.classList.add('active');
+                document.getElementById('showSocialBtn')?.classList.remove('active');
+            }
         } else {
-            document.getElementById('showAdultBtn')?.classList.add('active');
-            document.getElementById('showSocialBtn')?.classList.remove('active');
+            console.log('[Init] No active session');
+            updateNavigation();
         }
         
         console.log('[Init] Initialization complete');
