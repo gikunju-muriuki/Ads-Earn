@@ -3,7 +3,7 @@
 // Handles offline functionality and asset caching
 // ============================================
 
-const CACHE_NAME = 'beeearn-v1.2';
+const CACHE_NAME = 'beeearn-v1.3';
 const STATIC_ASSETS = [
     './',
     './index.html',
